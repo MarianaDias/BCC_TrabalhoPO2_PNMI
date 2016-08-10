@@ -52,22 +52,129 @@ var
   f: String;
   epslonn: Extended;
   naux: Integer;
-  x:Array[1..10] of Extended;
+  xIni:Array[1..10] of Extended;
 
 function FxRn(f: String; x: Vetor; colchetes: Boolean; var y: Extended): Word; stdcall;external 'Interpretador.dll';
+function FxR1(f:String; x: Extended; var y:Extended):Word; stdcall; external 'Interpretador.dll';
 
 implementation
 
 {$R *.lfm}
 
 { TForm1 }
+
+function DerivadaPrimeira (func:String;x,Epsillon: Extended; var d: Extended): Word;
+var
+  h,p,q,y1,y2 : Extended;
+  k : Integer;
+begin
+  y1:=0;
+  y2:= 0;
+   h := 1000*Epsillon;
+   FxR1(func,x+h,y1);
+   FxR1(func,x-h,y2);
+   p := (y1 - y2)/(2*h);
+   for k := 1 to 10 do
+     begin
+       q := p;
+       h := h/2;
+       FxR1(func,x+h,y1);
+       FxR1(func,x-h,y2);
+       p := (y1 - y2)/(2*h);
+       if abs(p-q) < Epsillon   then
+          Break;
+     end;
+    d := p;
+    Result:= 0;
+end;
+
+
+function DerivadaSegunda (func: String;x,Epsillon : Extended;var d :Extended) : Word;
+var
+  h,p,q,y1,y2,y3 : Extended;
+  k : Integer;
+begin
+   y1:= 0;
+   y2 := 0;
+   y3 :=0;
+   h := 1000*Epsillon;
+   FxR1(func,x+2*h,y1);
+   FxR1(func,x,y2);
+   FxR1(func,x-2*h,y3);
+   p := (y1 - 2*y2+ y3)/(4*h*h);
+   for k := 1 to 10 do
+    begin
+     q := p;
+     h := h/2;
+    FxR1(func,x+2*h,y1);
+    FxR1(func,x,y2);
+    FxR1(func,x-2*h,y3);
+     p := (y1 - 2*y2+ y3)/(4*h*h);
+   if abs(p-q) < Epsillon then
+      Break;
+     end;
+   d :=p;
+   Result := 0;
+end;
+
+function MNewton(string func);
+var
+  x,y,d1,d2,min : Extended;
+  stop : Boolean;
+begin
+  //Para entrar a primeira vez
+  d1:= epslon+1;
+  d2 := 0;
+  x := a;
+  stop := false;
+
+  while (d1 > epslon) and (not stop) do
+  begin
+   DerivadaPrimeira(func,x,0.001,d1);
+   DerivadaSegunda(func,x,0.001,d2);
+   y := x;
+   if d2 <> 0  then
+      x := x - (d1/d2);
+   //Criterios de Parada
+   if x > 1 then
+   begin
+     if abs ((x-y)/x) < epslon then
+       stop := true;
+   end
+   else if abs (x-y) < epslon then
+       stop:= true;
+   DerivadaPrimeira(func,x,0.001,d1);
+  end;
+  min := x;
+  Result:= min;
+end;
+
+
+
 procedure CoordenadasCiclicas();
 begin
 
 end;
 
 procedure HookeJeeves();
+var
+  d1,d2 : Array[1..2] of Extended;
+  y,x : Array[1..10] of Extended;
+  j,i : Integer;
+  lambda : Exteded;
+  parte1, parte2 : string;
 begin
+   //direções coordenadas
+   d1[1] = 1;
+   d1[2] = 0;
+   d2[1] = 0;
+   d2[1] = 1;
+   for i = 1 to i <= naux do
+       x[i] = xIni[i];
+   for(j = 1 to j< naux) do
+   begin
+      //Nao sei fazer;
+   end;
 
 end;
 
@@ -168,7 +275,7 @@ begin
          begin
              try
                begin
-                    x[i]:=StrToFloat(StringGrid1.Cells[i, 1]);
+                    xIni[i]:=StrToFloat(StringGrid1.Cells[i, 1]);
                end;
              except
                 begin
