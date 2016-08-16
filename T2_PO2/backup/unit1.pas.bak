@@ -52,7 +52,8 @@ var
   f: String;
   epslonn: Extended;
   naux: Integer;
-  xIni:Array[1..10] of Extended;
+  xIni, xSol :Array[1..5] of Extended;
+  d : Array[1..5,1..5] of Extended;
 
 function FxRn(f: String; x: Vetor; colchetes: Boolean; var y: Extended): Word; stdcall;external 'Interpretador.dll';
 function FxR1(f:String; x: Extended; var y:Extended):Word; stdcall; external 'Interpretador.dll';
@@ -117,18 +118,18 @@ begin
    Result := 0;
 end;
 
-function MNewton(string func);
+function MNewton(func : String): Extended;
 var
   x,y,d1,d2,min : Extended;
   stop : Boolean;
 begin
   //Para entrar a primeira vez
-  d1:= epslon+1;
+  d1:= epslonn+1;
   d2 := 0;
-  x := a;
+  x := -10;
   stop := false;
 
-  while (d1 > epslon) and (not stop) do
+  while (abs(d1) > epslonn) and (not stop) do
   begin
    DerivadaPrimeira(func,x,0.001,d1);
    DerivadaSegunda(func,x,0.001,d2);
@@ -138,10 +139,10 @@ begin
    //Criterios de Parada
    if x > 1 then
    begin
-     if abs ((x-y)/x) < epslon then
+     if abs ((x-y)/x) < epslonn then
        stop := true;
    end
-   else if abs (x-y) < epslon then
+   else if abs (x-y) < epslonn then
        stop:= true;
    DerivadaPrimeira(func,x,0.001,d1);
   end;
@@ -149,11 +150,75 @@ begin
   Result:= min;
 end;
 
+procedure MontaDirecao();
+var
+  i,j : Integer;
+begin
+  for i := 1 to naux do
+  begin
+    for j :=1 to naux do
+    begin
+      if(i = j) then
+      begin
+           d[i][j] := 1;
+      end
+      else
+           d[i][j] :=0;
+      end;
+   end;
+end;
+
 
 
 procedure CoordenadasCiclicas();
+var
+  j,k,i,m : Integer;
+  y,x, xant : Array[1..5] of Extended;
+  soma, lambda : Extended;
+  parametro,fcopia: String;
 begin
+  k :=0;
+   for i:= 1 to naux do
+      x[i] := xIni[i];
+    MontaDirecao();
+  repeat
+     k := k+1;
+     for i:=1 to naux do
+      y[i] := x[i];
+     for j:= 1 to naux do   //Varia direção
+     begin
 
+     fcopia := f;
+     for m := 1 to naux do //Monta a Equação para o Newton
+     begin
+        parametro := FloatToStr(y[m]) +'+x*'+ FloatToStr(d[m][j]);
+        fcopia := StringReplace(fcopia,'x'+IntToStr(m),'('+parametro+')', [rfReplaceAll, rfIgnoreCase]);
+     end;
+     lambda := MNewton(fcopia);
+     for i := 1 to naux do  //Varia Linha da Direção
+     begin
+          y[i] := y[i] + lambda*d[i][j];
+     end;
+     end;
+
+     for i:=1 to naux do
+     begin
+      xant[i] := x[i];
+      x[i] := y[i];
+     end;
+
+    //Condição de Parada
+    soma := 0;
+    for i:=1 to naux do
+    begin
+      soma := soma + sqr(x[i] - xant[i]);
+    end;
+  until sqrt(soma) < epslonn;
+  for i:= 1 to naux do
+  begin
+     xSol[i] := x[i];
+     ShowMessage(IntToStr(k));
+  end;
 end;
 
 procedure HookeJeeves();
@@ -161,20 +226,10 @@ var
   d1,d2 : Array[1..2] of Extended;
   y,x : Array[1..10] of Extended;
   j,i : Integer;
-  lambda : Exteded;
+  lambda : Extended;
   parte1, parte2 : string;
 begin
-   //direções coordenadas
-   d1[1] = 1;
-   d1[2] = 0;
-   d2[1] = 0;
-   d2[1] = 1;
-   for i = 1 to i <= naux do
-       x[i] = xIni[i];
-   for(j = 1 to j< naux) do
-   begin
-      //Nao sei fazer;
-   end;
+
 
 end;
 
@@ -286,7 +341,7 @@ begin
          end;
      for i := 1 to naux do
          begin
-         StringGrid2.Cells[i, 1] := FloatToStr(x[i]);
+         StringGrid2.Cells[i, 1] := FloatToStr(xIni[i]);
          end;
 
      if coordenadas.Checked then
@@ -317,6 +372,11 @@ begin
         begin
              Pdavidon();
         end;
+     for i:= 1 to naux do
+     begin
+         StringGrid2.Cells[0,i] := IntToStr(i);
+         StringGrid2.Cells[1,i] := FloatToStr(xSol[i]);
+     end;
 end;
 
 procedure TForm1.btajudaClick(Sender: TObject);
