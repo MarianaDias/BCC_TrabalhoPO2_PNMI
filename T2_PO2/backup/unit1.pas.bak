@@ -173,7 +173,7 @@ begin
        x[i] = xIni[i];
    for(j = 1 to j< naux) do
    begin
-
+      //Nao sei fazer;
    end;
 
 end;
