@@ -281,7 +281,6 @@ begin
           Exit;
         end;
      StringGrid1.ColCount := naux+1;
-     StringGrid2.ColCount := naux+1;
      StringGrid1.Cells[0, 0] := 'i';
      StringGrid1.Cells[0, 1] := 'x[i]';
      for i := 1 to naux do

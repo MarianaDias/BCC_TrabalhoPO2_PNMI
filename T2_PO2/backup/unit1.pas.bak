@@ -339,10 +339,6 @@ begin
                 end;
              end;
          end;
-     for i := 1 to naux do
-         begin
-         StringGrid2.Cells[i, 1] := FloatToStr(xIni[i]);
-         end;
 
      if coordenadas.Checked then
         begin

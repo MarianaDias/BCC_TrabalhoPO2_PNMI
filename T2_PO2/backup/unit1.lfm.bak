@@ -1,12 +1,12 @@
 object Form1: TForm1
   Left = 419
-  Height = 613
+  Height = 530
   Top = 49
-  Width = 707
+  Width = 708
   Align = alClient
   Caption = 'T2 - Programação Não Linear Multivariável Irrestrito'
-  ClientHeight = 613
-  ClientWidth = 707
+  ClientHeight = 530
+  ClientWidth = 708
   Position = poDesktopCenter
   LCLVersion = '1.4.2.0'
   object GroupBox1: TGroupBox
@@ -101,7 +101,7 @@ object Form1: TForm1
     end
     object StringGrid1: TStringGrid
       Left = 8
-      Height = 72
+      Height = 48
       Top = 120
       Width = 344
       AutoFillColumns = True
@@ -218,43 +218,41 @@ object Form1: TForm1
     ClientWidth = 685
     TabOrder = 2
     object StringGrid2: TStringGrid
-      Left = 10
-      Height = 182
-      Top = 10
-      Width = 662
+      Left = 0
+      Height = 200
+      Top = 0
+      Width = 352
       AutoFillColumns = True
+      ColCount = 2
       TabOrder = 0
       ColWidths = (
         64
-        148
-        148
-        148
-        150
+        284
       )
     end
     object btcalcular: TBitBtn
-      Left = 10
+      Left = 464
       Height = 48
-      Top = 216
-      Width = 94
+      Top = 8
+      Width = 91
       Caption = 'Calcular'
       OnClick = btcalcularClick
       TabOrder = 1
     end
     object btlimpar: TBitBtn
-      Left = 280
+      Left = 464
       Height = 48
-      Top = 216
+      Top = 72
       Width = 91
       Caption = 'Limpar'
       OnClick = btlimparClick
       TabOrder = 2
     end
     object btajuda: TBitBtn
-      Left = 560
+      Left = 464
       Height = 48
-      Top = 216
-      Width = 88
+      Top = 136
+      Width = 91
       Caption = 'Ajuda'
       OnClick = btajudaClick
       TabOrder = 3
