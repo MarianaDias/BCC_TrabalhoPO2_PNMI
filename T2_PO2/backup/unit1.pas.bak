@@ -217,20 +217,74 @@ begin
   for i:= 1 to naux do
   begin
      xSol[i] := x[i];
-     ShowMessage(IntToStr(k));
+    // ShowMessage(IntToStr(k));
   end;
 end;
 
 procedure HookeJeeves();
 var
-  d1,d2 : Array[1..2] of Extended;
-  y,x : Array[1..10] of Extended;
-  j,i : Integer;
-  lambda : Extended;
-  parte1, parte2 : string;
+  dir,y,x, xant : Array[1..5] of Extended;
+  k,i,j,m : Integer;
+  soma, lambda : Extended;
+  fcopia,parametro : String;
+  pare : Boolean;
 begin
-
-
+  k := 0;
+  pare := false;
+  for i := 1 to naux do
+  begin
+      x[i] := xIni[i];
+      y[i] := x[i];
+  end;
+  MontaDirecao();
+  repeat
+  k :=k+1;
+  for j:= 1 to naux do
+  begin
+     fcopia := f;
+     for m:= 1 to naux do //Monta a Equação
+     begin
+        parametro := FloatToStr(y[m]) +'+x*('+ FloatToStr(d[m][j])+')';
+        fcopia := StringReplace(fcopia,'x'+IntToStr(m),'('+parametro+')', [rfReplaceAll, rfIgnoreCase]);
+     end;
+     lambda := MNewton(fcopia);
+     for i:=1 to naux do
+         y[i] := y[i] + lambda*d[i][j];
+  end;
+  for i:= 1 to naux do
+  begin
+    xant[i] := x[i];
+    x[i] := y[i];
+  end;
+  //Testa Parada
+  soma := 0;
+  for i:=1 to naux do
+  begin
+    soma := soma + sqr(x[i] - xant[i]);
+  end;
+  if sqrt(soma) < epslonn then
+  begin
+     pare := true;
+  end
+  else   //Calcula variação da direção
+  begin
+    for i:=1 to naux do
+        dir[i] := x[i] - xant[i];
+    for m:= 1 to naux do //Monta a Equação
+    begin
+        parametro := FloatToStr(y[m]) +'+x*('+ FloatToStr(dir[m])+')';
+        fcopia := StringReplace(fcopia,'x'+IntToStr(m),'('+parametro+')', [rfReplaceAll, rfIgnoreCase]);
+    end;
+    lambda := MNewton(fcopia);
+    for i:=1 to naux do
+         y[i] := y[i] + lambda*dir[i];
+  end;
+  until pare = true;
+  for i:= 1 to naux do
+  begin
+     xSol[i] := x[i];
+    // ShowMessage(IntToStr(k));
+  end;
 end;
 
 procedure Pgradiente();
@@ -281,7 +335,6 @@ begin
           Exit;
         end;
      StringGrid1.ColCount := naux+1;
-     StringGrid2.ColCount := naux+1;
      StringGrid1.Cells[0, 0] := 'i';
      StringGrid1.Cells[0, 1] := 'x[i]';
      for i := 1 to naux do
