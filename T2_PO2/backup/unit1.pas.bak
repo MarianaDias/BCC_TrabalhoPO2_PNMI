@@ -46,13 +46,13 @@ type
   end;
 
 type
-  vetor= array of Extended;
+  Vetor= array[1..5] of Extended;
 var
   Form1: TForm1;
   f: String;
   epslonn: Extended;
   naux: Integer;
-  xIni, xSol :Array[1..5] of Extended;
+  xIni, xSol : Vetor;
   d : Array[1..5,1..5] of Extended;
 
 function FxRn(f: String; x: Vetor; colchetes: Boolean; var y: Extended): Word; stdcall;external 'Interpretador.dll';
@@ -173,7 +173,7 @@ end;
 procedure CoordenadasCiclicas();
 var
   j,k,i,m : Integer;
-  y,x, xant : Array[1..5] of Extended;
+  y,x, xant : Vetor;
   soma, lambda : Extended;
   parametro,fcopia: String;
 begin
@@ -270,6 +270,7 @@ begin
   begin
     for i:=1 to naux do
         dir[i] := x[i] - xant[i];
+    fcopia := f;
     for m:= 1 to naux do //Monta a Equação
     begin
         parametro := FloatToStr(y[m]) +'+x*('+ FloatToStr(dir[m])+')';
@@ -287,8 +288,119 @@ begin
   end;
 end;
 
-procedure Pgradiente();
+function DerivadaParcialPrimeira(f: string; var x: Vetor; i: Byte; Epsilon: Extended; var d: Extended): Word;
+var
+  Erro: Word;
+  d1, d2, h, y1, y2, xi: Extended;
+  j: Integer;
 begin
+  y2 := 0;
+  y1 := 0;
+  h := Epsilon*1000;
+  xi := x[i];
+  x[i] := xi + h;
+  Erro := FxRn(f, x, false, y1);
+
+  if ( Erro <> 0) then
+    begin
+      ShowMessage('Erro ao avaliar expressão.');
+      Exit;
+    end;
+
+  x[i] := xi-h;
+  FxRn(f, x, false, y2);
+
+  d1 := (y1 - y2)/(2*h);
+  j := 0;
+  while j < 100 do
+    begin
+      j := j+1;
+      h := h/2;
+      x[i] := xi+h;
+      FxRn(f, x, false, y1);
+      x[i] := xi-h;
+      FxRn(f, x, false, y2);
+      d2 := (y1 - y2)/(2*h);
+      if abs((d2 - d1)) < Epsilon then
+      begin
+        d := d2;
+        break;
+      end;
+      d1 := d2;
+    end;
+end;
+
+function Gradiente(f: string; x: Vetor; Epsilon: Extended; var G: Array of Extended): Word;
+var
+  i: Integer;
+  d : Extended;
+begin
+  d := 0;
+  for i := 1 to naux do
+    begin
+      DerivadaParcialPrimeira(f, x, i, Epsilon, d);
+      G[i] := d;
+    end;
+end;
+
+procedure Pgradiente();
+var
+k,m,i,j:integer;
+grad,y,x,d : Vetor;
+soma,lambda:Extended;
+parametro,fcopia:String;
+begin
+  k:=0;
+  for i:= 1 to naux do
+  begin
+      x[i] := xIni[i];
+      y[i] := x[i];
+  end;
+  for i:= 1 to 5 do
+      grad[i] := 0;
+  fcopia:=f;
+  Gradiente(fcopia,y,0.0001,grad);
+  //Condição de Parada
+    soma := 0;
+    for i:=1 to naux do
+    begin
+      soma := soma + sqr(grad[i]);
+    end;
+  while sqrt(soma) >= epslonn do //inicio
+  begin
+    for j:=1 to naux do
+    begin
+      d[j]:=0;
+    end;
+    for j:=1 to naux do
+    begin
+      d[j]:=-grad[j];
+    end;
+    for m := 1 to naux do //Monta a Equação para o Newton
+    begin
+      parametro := FloatToStr(x[m]) +'+x*'+ FloatToStr(d[m]);
+      fcopia := StringReplace(fcopia,'x'+IntToStr(m),'('+parametro+')', [rfReplaceAll, rfIgnoreCase]);
+    end;
+    lambda := MNewton(fcopia);
+    for i := 1 to naux do  //Varia Direção
+    begin
+      x[i] := x[i] + lambda*d[i];
+      y[i] := x[i];
+    end;
+    k:=k+1;
+    fcopia:=f;
+    Gradiente(fcopia,y,epslonn,grad);
+  //Condição de Parada
+    soma := 0;
+    for i:=1 to naux do
+    begin
+      soma := soma + sqr(grad[i]);
+    end;
+  end;
+  for i:= 1 to naux do
+  begin
+     xSol[i] := x[i];
+  end;
 
 end;
 
@@ -383,6 +495,7 @@ begin
          begin
              try
                begin
+                    xIni[i] := 0;
                     xIni[i]:=StrToFloat(StringGrid1.Cells[i, 1]);
                end;
              except
