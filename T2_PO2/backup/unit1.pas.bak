@@ -46,7 +46,7 @@ type
   end;
 
 type
-  Vetor= array[1..5] of Extended;
+  Vetor= Array of Extended;
 var
   Form1: TForm1;
   f: String;
@@ -55,8 +55,9 @@ var
   xIni, xSol : Vetor;
   d : Array[1..5,1..5] of Extended;
 
-function FxRn(f: String; x: Vetor; colchetes: Boolean; var y: Extended): Word; stdcall;external 'Interpretador.dll';
+
 function FxR1(f:String; x: Extended; var y:Extended):Word; stdcall; external 'Interpretador.dll';
+function FxRn(f: String; x: Vetor; colchetes: Boolean; var y: Extended): Word; stdcall; external 'Interpretador.dll';
 
 implementation
 
@@ -178,6 +179,9 @@ var
   parametro,fcopia: String;
 begin
   k :=0;
+  SetLength(x,naux+1);
+  SetLength(y,naux+1);
+  SetLength(xant,naux+1);
    for i:= 1 to naux do
       x[i] := xIni[i];
     MontaDirecao();
@@ -223,7 +227,7 @@ end;
 
 procedure HookeJeeves();
 var
-  dir,y,x, xant : Array[1..5] of Extended;
+  dir,y,x, xant : Vetor;
   k,i,j,m : Integer;
   soma, lambda : Extended;
   fcopia,parametro : String;
@@ -231,6 +235,10 @@ var
 begin
   k := 0;
   pare := false;
+  SetLength(x,naux+1);
+  SetLength(y,naux+1);
+  SetLength(xant,naux+1);
+  SetLength(dir,naux+1);
   for i := 1 to naux do
   begin
       x[i] := xIni[i];
@@ -299,7 +307,7 @@ begin
   h := Epsilon*1000;
   xi := x[i];
   x[i] := xi + h;
-  Erro := FxRn(f, x, false, y1);
+  Erro := FxRn(f, x, true, y1);
 
   if ( Erro <> 0) then
     begin
@@ -351,6 +359,10 @@ soma,lambda:Extended;
 parametro,fcopia:String;
 begin
   k:=0;
+  SetLength(x,naux+1);
+  SetLength(y,naux+1);
+  SetLength(d,naux+1);
+  SetLength(grad,naux+1);
   for i:= 1 to naux do
   begin
       x[i] := xIni[i];
@@ -491,11 +503,11 @@ begin
             Exit;
         end;
      end;
+     SetLength(xIni,naux+1);
      for i := 1 to naux do
          begin
              try
                begin
-                    xIni[i] := 0;
                     xIni[i]:=StrToFloat(StringGrid1.Cells[i, 1]);
                end;
              except
