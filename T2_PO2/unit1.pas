@@ -371,7 +371,7 @@ begin
   for i:= 1 to 5 do
       grad[i] := 0;
   fcopia:=f;
-  Gradiente(fcopia,x,0.0001,grad);
+  Gradiente(fcopia,y,0.0001,grad);
   //Condição de Parada
     soma := 0;
     for i:=1 to naux do
@@ -386,7 +386,7 @@ begin
     end;
     for m := 1 to naux do //Monta a Equação para o Newton
     begin
-      parametro := FloatToStr(x[m]) +'+x*('+ FloatToStr(dv[m])+')';
+      parametro := FloatToStrF((x[m]), ffGeneral, 8, 4)+'+x*('+ FloatToStrF(dv[m],ffGeneral, 8, 4)+')';
       fcopia := StringReplace(fcopia,'x'+IntToStr(m),'('+parametro+')', [rfReplaceAll, rfIgnoreCase]);
     end;
     lambda := MNewton(fcopia);
