@@ -354,14 +354,14 @@ end;
 procedure Pgradiente();
 var
 k,m,i,j:integer;
-grad,y,x,d : Vetor;
+grad,y,x,dv: Vetor;
 soma,lambda:Extended;
 parametro,fcopia:String;
 begin
   k:=0;
   SetLength(x,naux+1);
   SetLength(y,naux+1);
-  SetLength(d,naux+1);
+  SetLength(dv,naux+1);
   SetLength(grad,naux+1);
   for i:= 1 to naux do
   begin
@@ -371,7 +371,7 @@ begin
   for i:= 1 to 5 do
       grad[i] := 0;
   fcopia:=f;
-  Gradiente(fcopia,y,0.0001,grad);
+  Gradiente(fcopia,x,0.0001,grad);
   //Condição de Parada
     soma := 0;
     for i:=1 to naux do
@@ -382,21 +382,17 @@ begin
   begin
     for j:=1 to naux do
     begin
-      d[j]:=0;
-    end;
-    for j:=1 to naux do
-    begin
-      d[j]:=-grad[j];
+      dv[j]:=-grad[j];
     end;
     for m := 1 to naux do //Monta a Equação para o Newton
     begin
-      parametro := FloatToStr(x[m]) +'+x*'+ FloatToStr(d[m]);
+      parametro := FloatToStr(x[m]) +'+x*('+ FloatToStr(dv[m])+')';
       fcopia := StringReplace(fcopia,'x'+IntToStr(m),'('+parametro+')', [rfReplaceAll, rfIgnoreCase]);
     end;
     lambda := MNewton(fcopia);
     for i := 1 to naux do  //Varia Direção
     begin
-      x[i] := x[i] + lambda*d[i];
+      x[i] := x[i] + lambda*dv[i];
       y[i] := x[i];
     end;
     k:=k+1;
