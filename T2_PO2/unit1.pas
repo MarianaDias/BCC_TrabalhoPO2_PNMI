@@ -296,7 +296,7 @@ begin
   end;
 end;
 
-function DerivadaParcialPrimeira(f: string; var x: Vetor; i: Byte; Epsilon: Extended; var d: Extended): Word;
+function DerivadaParcialPrimeira(func: string; var x: Vetor; i: Byte; Epsilon: Extended; var d: Extended): Word;
 var
   Erro: Word;
   d1, d2, h, y1, y2, xi: Extended;
@@ -307,7 +307,7 @@ begin
   h := Epsilon*1000;
   xi := x[i];
   x[i] := xi + h;
-  Erro := FxRn(f, x, true, y1);
+  Erro := FxRn(func, x, false, y1);
 
   if ( Erro <> 0) then
     begin
@@ -316,7 +316,7 @@ begin
     end;
 
   x[i] := xi-h;
-  FxRn(f, x, false, y2);
+  FxRn(func, x, false, y2);
 
   d1 := (y1 - y2)/(2*h);
   j := 0;
@@ -325,9 +325,9 @@ begin
       j := j+1;
       h := h/2;
       x[i] := xi+h;
-      FxRn(f, x, false, y1);
+      FxRn(func, x, false, y1);
       x[i] := xi-h;
-      FxRn(f, x, false, y2);
+      FxRn(func, x, false, y2);
       d2 := (y1 - y2)/(2*h);
       if abs((d2 - d1)) < Epsilon then
       begin
@@ -338,7 +338,7 @@ begin
     end;
 end;
 
-function Gradiente(f: string; x: Vetor; Epsilon: Extended; var G: Array of Extended): Word;
+function Gradiente(func: string; x: Vetor; Epsilon: Extended; var G: Array of Extended): Word;
 var
   i: Integer;
   d : Extended;
@@ -346,7 +346,7 @@ begin
   d := 0;
   for i := 1 to naux do
     begin
-      DerivadaParcialPrimeira(f, x, i, Epsilon, d);
+      DerivadaParcialPrimeira(func, x, i, Epsilon, d);
       G[i] := d;
     end;
 end;

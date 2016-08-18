@@ -46,33 +46,373 @@ type
   end;
 
 type
-  vetor= array of Extended;
+  Vetor= Array of Extended;
 var
   Form1: TForm1;
   f: String;
   epslonn: Extended;
-  naux: integer;
-  x: array of extended;
+  naux: Integer;
+  xIni, xSol : Vetor;
+  d : Array[1..5,1..5] of Extended;
 
-function FxRn(f: String; x: Vetor; colchetes: Boolean; var y: Extended): Word; stdcall;external 'Interpretador.dll';
+
+function FxR1(f:String; x: Extended; var y:Extended):Word; stdcall; external 'Interpretador.dll';
+function FxRn(f: String; x: Vetor; colchetes: Boolean; var y: Extended): Word; stdcall; external 'Interpretador.dll';
 
 implementation
 
 {$R *.lfm}
 
 { TForm1 }
-procedure CoordenadasCiclicas();
-begin
 
+function DerivadaPrimeira (func:String;x,Epsillon: Extended; var d: Extended): Word;
+var
+  h,p,q,y1,y2 : Extended;
+  k : Integer;
+begin
+  y1:=0;
+  y2:= 0;
+   h := 1000*Epsillon;
+   FxR1(func,x+h,y1);
+   FxR1(func,x-h,y2);
+   p := (y1 - y2)/(2*h);
+   for k := 1 to 10 do
+     begin
+       q := p;
+       h := h/2;
+       FxR1(func,x+h,y1);
+       FxR1(func,x-h,y2);
+       p := (y1 - y2)/(2*h);
+       if abs(p-q) < Epsillon   then
+          Break;
+     end;
+    d := p;
+    Result:= 0;
+end;
+
+
+function DerivadaSegunda (func: String;x,Epsillon : Extended;var d :Extended) : Word;
+var
+  h,p,q,y1,y2,y3 : Extended;
+  k : Integer;
+begin
+   y1:= 0;
+   y2 := 0;
+   y3 :=0;
+   h := 1000*Epsillon;
+   FxR1(func,x+2*h,y1);
+   FxR1(func,x,y2);
+   FxR1(func,x-2*h,y3);
+   p := (y1 - 2*y2+ y3)/(4*h*h);
+   for k := 1 to 10 do
+    begin
+     q := p;
+     h := h/2;
+    FxR1(func,x+2*h,y1);
+    FxR1(func,x,y2);
+    FxR1(func,x-2*h,y3);
+     p := (y1 - 2*y2+ y3)/(4*h*h);
+   if abs(p-q) < Epsillon then
+      Break;
+     end;
+   d :=p;
+   Result := 0;
+end;
+
+function MNewton(func : String): Extended;
+var
+  x,y,d1,d2,min : Extended;
+  stop : Boolean;
+begin
+  //Para entrar a primeira vez
+  d1:= epslonn+1;
+  d2 := 0;
+  x := -10;
+  stop := false;
+
+  while (abs(d1) > epslonn) and (not stop) do
+  begin
+   DerivadaPrimeira(func,x,0.001,d1);
+   DerivadaSegunda(func,x,0.001,d2);
+   y := x;
+   if d2 <> 0  then
+      x := x - (d1/d2);
+   //Criterios de Parada
+   if x > 1 then
+   begin
+     if abs ((x-y)/x) < epslonn then
+       stop := true;
+   end
+   else if abs (x-y) < epslonn then
+       stop:= true;
+   DerivadaPrimeira(func,x,0.001,d1);
+  end;
+  min := x;
+  Result:= min;
+end;
+
+procedure MontaDirecao();
+var
+  i,j : Integer;
+begin
+  for i := 1 to naux do
+  begin
+    for j :=1 to naux do
+    begin
+      if(i = j) then
+      begin
+           d[i][j] := 1;
+      end
+      else
+           d[i][j] :=0;
+      end;
+   end;
+end;
+
+
+
+procedure CoordenadasCiclicas();
+var
+  j,k,i,m : Integer;
+  y,x, xant : Vetor;
+  soma, lambda : Extended;
+  parametro,fcopia: String;
+begin
+  k :=0;
+  SetLength(x,naux+1);
+  SetLength(y,naux+1);
+  SetLength(xant,naux+1);
+   for i:= 1 to naux do
+      x[i] := xIni[i];
+    MontaDirecao();
+  repeat
+     k := k+1;
+     for i:=1 to naux do
+      y[i] := x[i];
+     for j:= 1 to naux do   //Varia direção
+     begin
+
+     fcopia := f;
+     for m := 1 to naux do //Monta a Equação para o Newton
+     begin
+        parametro := FloatToStr(y[m]) +'+x*'+ FloatToStr(d[m][j]);
+        fcopia := StringReplace(fcopia,'x'+IntToStr(m),'('+parametro+')', [rfReplaceAll, rfIgnoreCase]);
+     end;
+     lambda := MNewton(fcopia);
+     for i := 1 to naux do  //Varia Linha da Direção
+     begin
+          y[i] := y[i] + lambda*d[i][j];
+     end;
+     end;
+
+     for i:=1 to naux do
+     begin
+      xant[i] := x[i];
+      x[i] := y[i];
+     end;
+
+    //Condição de Parada
+    soma := 0;
+    for i:=1 to naux do
+    begin
+      soma := soma + sqr(x[i] - xant[i]);
+    end;
+  until sqrt(soma) < epslonn;
+  for i:= 1 to naux do
+  begin
+     xSol[i] := x[i];
+    // ShowMessage(IntToStr(k));
+  end;
 end;
 
 procedure HookeJeeves();
+var
+  dir,y,x, xant : Vetor;
+  k,i,j,m : Integer;
+  soma, lambda : Extended;
+  fcopia,parametro : String;
+  pare : Boolean;
 begin
+  k := 0;
+  pare := false;
+  SetLength(x,naux+1);
+  SetLength(y,naux+1);
+  SetLength(xant,naux+1);
+  SetLength(dir,naux+1);
+  for i := 1 to naux do
+  begin
+      x[i] := xIni[i];
+      y[i] := x[i];
+  end;
+  MontaDirecao();
+  repeat
+  k :=k+1;
+  for j:= 1 to naux do
+  begin
+     fcopia := f;
+     for m:= 1 to naux do //Monta a Equação
+     begin
+        parametro := FloatToStr(y[m]) +'+x*('+ FloatToStr(d[m][j])+')';
+        fcopia := StringReplace(fcopia,'x'+IntToStr(m),'('+parametro+')', [rfReplaceAll, rfIgnoreCase]);
+     end;
+     lambda := MNewton(fcopia);
+     for i:=1 to naux do
+         y[i] := y[i] + lambda*d[i][j];
+  end;
+  for i:= 1 to naux do
+  begin
+    xant[i] := x[i];
+    x[i] := y[i];
+  end;
+  //Testa Parada
+  soma := 0;
+  for i:=1 to naux do
+  begin
+    soma := soma + sqr(x[i] - xant[i]);
+  end;
+  if sqrt(soma) < epslonn then
+  begin
+     pare := true;
+  end
+  else   //Calcula variação da direção
+  begin
+    for i:=1 to naux do
+        dir[i] := x[i] - xant[i];
+    fcopia := f;
+    for m:= 1 to naux do //Monta a Equação
+    begin
+        parametro := FloatToStr(y[m]) +'+x*('+ FloatToStr(dir[m])+')';
+        fcopia := StringReplace(fcopia,'x'+IntToStr(m),'('+parametro+')', [rfReplaceAll, rfIgnoreCase]);
+    end;
+    lambda := MNewton(fcopia);
+    for i:=1 to naux do
+         y[i] := y[i] + lambda*dir[i];
+  end;
+  until pare = true;
+  for i:= 1 to naux do
+  begin
+     xSol[i] := x[i];
+    // ShowMessage(IntToStr(k));
+  end;
+end;
 
+function DerivadaParcialPrimeira(f: string; var x: Vetor; i: Byte; Epsilon: Extended; var d: Extended): Word;
+var
+  Erro: Word;
+  d1, d2, h, y1, y2, xi: Extended;
+  j: Integer;
+begin
+  y2 := 0;
+  y1 := 0;
+  h := Epsilon*1000;
+  xi := x[i];
+  x[i] := xi + h;
+  Erro := FxRn(f, x, false, y1);
+
+  if ( Erro <> 0) then
+    begin
+      ShowMessage('Erro ao avaliar expressão.');
+      Exit;
+    end;
+
+  x[i] := xi-h;
+  FxRn(f, x, false, y2);
+
+  d1 := (y1 - y2)/(2*h);
+  j := 0;
+  while j < 100 do
+    begin
+      j := j+1;
+      h := h/2;
+      x[i] := xi+h;
+      FxRn(f, x, false, y1);
+      x[i] := xi-h;
+      FxRn(f, x, false, y2);
+      d2 := (y1 - y2)/(2*h);
+      if abs((d2 - d1)) < Epsilon then
+      begin
+        d := d2;
+        break;
+      end;
+      d1 := d2;
+    end;
+end;
+
+function Gradiente(f: string; x: Vetor; Epsilon: Extended; var G: Array of Extended): Word;
+var
+  i: Integer;
+  d : Extended;
+begin
+  d := 0;
+  for i := 1 to naux do
+    begin
+      DerivadaParcialPrimeira(f, x, i, Epsilon, d);
+      G[i] := d;
+    end;
 end;
 
 procedure Pgradiente();
+var
+k,m,i,j:integer;
+grad,y,x,d : Vetor;
+soma,lambda:Extended;
+parametro,fcopia:String;
 begin
+  k:=0;
+  SetLength(x,naux+1);
+  SetLength(y,naux+1);
+  SetLength(d,naux+1);
+  SetLength(grad,naux+1);
+  for i:= 1 to naux do
+  begin
+      x[i] := xIni[i];
+      y[i] := x[i];
+  end;
+  for i:= 1 to 5 do
+      grad[i] := 0;
+  fcopia:=f;
+  Gradiente(fcopia,y,0.0001,grad);
+  //Condição de Parada
+    soma := 0;
+    for i:=1 to naux do
+    begin
+      soma := soma + sqr(grad[i]);
+    end;
+  while sqrt(soma) >= epslonn do //inicio
+  begin
+    for j:=1 to naux do
+    begin
+      d[j]:=0;
+    end;
+    for j:=1 to naux do
+    begin
+      d[j]:=-grad[j];
+    end;
+    for m := 1 to naux do //Monta a Equação para o Newton
+    begin
+      parametro := FloatToStr(x[m]) +'+x*'+ FloatToStr(d[m]);
+      fcopia := StringReplace(fcopia,'x'+IntToStr(m),'('+parametro+')', [rfReplaceAll, rfIgnoreCase]);
+    end;
+    lambda := MNewton(fcopia);
+    for i := 1 to naux do  //Varia Direção
+    begin
+      x[i] := x[i] + lambda*d[i];
+      y[i] := x[i];
+    end;
+    k:=k+1;
+    fcopia:=f;
+    Gradiente(fcopia,y,epslonn,grad);
+  //Condição de Parada
+    soma := 0;
+    for i:=1 to naux do
+    begin
+      soma := soma + sqr(grad[i]);
+    end;
+  end;
+  for i:= 1 to naux do
+  begin
+     xSol[i] := x[i];
+  end;
 
 end;
 
@@ -136,35 +476,48 @@ end;
 
 procedure TForm1.btcalcularClick(Sender: TObject);
 var
-  i:integer;
+ i:integer;
 begin
      try
-        f:=func.Text;
+        begin
+             f:= Trim(func.Text);
+        end;
      except
         begin
             ShowMessage('Funcao invalida.');
             Exit;
         end;
      end;
+     if f ='' then
+     begin
+          ShowMessage('Funcao invalida.');
+          Exit;
+     end;
      try
-        epslonn:=Strtoint(epslon.Text);
+        begin
+             epslonn:=StrtoFloat(epslon.Text);
+        end;
      except
         begin
             ShowMessage('Epslon invalido.');
             Exit;
         end;
      end;
+     SetLength(xIni,naux+1);
+     SetLength(xSol,naux+1);
      for i := 1 to naux do
          begin
              try
-                x[i-1]:=StrToFloat(StringGrid1.Cells[i, 1]);
+               begin
+                    xIni[i]:=StrToFloat(StringGrid1.Cells[i, 1]);
+               end;
              except
-                ShowMessage('Valor de x invalido.');
-                Exit;
+                begin
+                     ShowMessage('Valor de x invalido.');
+                     Exit;
+                end;
              end;
          end;
-     for i := 1 to naux do
-         StringGrid2.Cells[i, 1] := FloatToStr(x[i-1]);
 
      if coordenadas.Checked then
         begin
@@ -194,6 +547,11 @@ begin
         begin
              Pdavidon();
         end;
+     for i:= 1 to naux do
+     begin
+         StringGrid2.Cells[0,i] := IntToStr(i);
+         StringGrid2.Cells[1,i] := FloatToStr(xSol[i]);
+     end;
 end;
 
 procedure TForm1.btajudaClick(Sender: TObject);
