@@ -1,7 +1,7 @@
 object Form1: TForm1
-  Left = 419
+  Left = 1189
   Height = 530
-  Top = 49
+  Top = 105
   Width = 708
   Align = alClient
   Caption = 'T2 - Programação Não Linear Multivariável Irrestrito'

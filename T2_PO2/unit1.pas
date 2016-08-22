@@ -47,6 +47,7 @@ type
 
 type
   Vetor= Array of Extended;
+  Matriz = Array of Array of Extended;
 var
   Form1: TForm1;
   f: String;
@@ -410,6 +411,104 @@ begin
      xSol[i] := x[i];
   end;
 
+end;
+
+function DerivadaParcialSegunda(func: string; var x: Vetor; i, j: Byte; Epsilon: Extended; var d: Extended): Word;
+var
+  Erro: Word;
+  d1, d2, h, y4, y1, y2, y3, xi, xj: Extended;
+  k: Integer;
+begin
+  y3 := 0;
+  y2 := 0;
+  y1 := 0;
+  y4 := 0;
+  h := Epsilon*1000;
+  xi := x[i];
+  xj := x[j];
+
+  if (i <> j) then
+    begin
+      x[i] := xi+h;
+      x[j] := xj+h;
+      Erro := FxRn(f, x, c, y1);
+      if (Erro <> 0) then
+        begin
+          ShowMessage('Erro ao avaliar expressão.');
+          Exit;
+        end;
+      x[j] := xj-h;
+      FxRn(func, x, c, y2);
+      x[i] := xi-h;
+      FxRn(func, x, c, y4);
+      x[j] := xj+h;
+      FxRn(func, x, c, y3);
+      d1 := (y1 - y2 - y3 + y4)/(4*h*h);
+    end
+  else
+    begin
+      x[i] := xi+2*h;
+      Erro := FxRn(func, x, c, y1);
+      if (Erro <> 0) then
+        begin
+          ShowMessage('Erro ao avaliar expressão.');
+          Exit;
+        end;
+      x[i] := xi-2*h;
+      FxRn(func, x, c, y3);
+      x[i] := xi;
+      FxRn(func, x, c, y2);
+      d1 := (y1 - 2*y2 + y3)/(4*h*h);
+    end;
+  k := 0;
+  while k < 100 do
+    begin
+      k := k+1;
+      h := h/2;
+      if (i <> j) then
+        begin
+          x[i] := xi+h;
+          x[j] := xj+h;
+          FxRn(func, x, c, y1);
+          x[j] := xj-h;
+          FxRn(func, x, c, y2);
+          x[i] := xi-h;
+          FxRn(func, x, c, y4);
+          x[j] := xj+h;
+          FxRn(func, x, c, y3);
+          d2 := (y1 - y2 - y3 + y4)/(4*h*h);
+        end
+      else
+        begin
+          x[i] := xi+2*h;
+          FxRn(func, x, c, y1);
+          x[i] := xi-2*h;
+          FxRn(func, x, c, y3);
+          x[i] := xi;
+          FxRn(func, x, c, y2);
+          d2 := (y1 - 2*y2 + y3)/(4*h*h);
+        end;
+      if abs((d2 - d1)) < Epsilon then
+        begin
+          d := d2;
+          break;
+        end;
+      d1 := d2;
+    end;
+end;
+
+function Hessiana(func: string; x: Vetor; Epsilon: Extended, var H : Matriz): Word;
+var
+  i, j: Integer;
+  d : Extended;
+begin
+  d := 0;
+  for i := 1 to n do
+    for j := 1 to n do
+      begin
+        DerivadaParcialSegunda(func, x, i, j, Epsilon, d);
+        H[i, j] := d;
+      end;
 end;
 
 procedure Pnewton();

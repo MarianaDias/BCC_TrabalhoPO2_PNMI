@@ -14,35 +14,35 @@ object Form1: TForm1
     Height = 264
     Top = 8
     Width = 361
-    ClientHeight = 239
+    ClientHeight = 244
     ClientWidth = 357
     TabOrder = 0
     object Label1: TLabel
       Left = 136
-      Height = 20
+      Height = 15
       Top = 8
-      Width = 29
+      Width = 23
       Caption = 'F =  '
       ParentColor = False
     end
     object func: TEdit
       Left = 176
-      Height = 28
+      Height = 23
       Top = 0
       Width = 168
       TabOrder = 0
     end
     object labeln: TLabel
       Left = 8
-      Height = 20
+      Height = 15
       Top = 8
-      Width = 26
+      Width = 21
       Caption = 'n = '
       ParentColor = False
     end
     object n: TEdit
       Left = 40
-      Height = 28
+      Height = 23
       Top = 0
       Width = 40
       TabOrder = 1
@@ -110,23 +110,23 @@ object Form1: TForm1
       TabOrder = 2
       ColWidths = (
         64
-        63
-        63
-        63
-        66
+        69
+        69
+        69
+        69
       )
     end
     object lbepslon: TLabel
       Left = 8
-      Height = 20
+      Height = 15
       Top = 48
-      Width = 62
+      Width = 49
       Caption = 'Epslon = '
       ParentColor = False
     end
     object epslon: TEdit
       Left = 72
-      Height = 28
+      Height = 23
       Top = 40
       Width = 72
       TabOrder = 3
@@ -146,12 +146,12 @@ object Form1: TForm1
     ChildSizing.ShrinkVertical = crsScaleChilds
     ChildSizing.Layout = cclLeftToRightThenTopToBottom
     ChildSizing.ControlsPerLine = 1
-    ClientHeight = 237
+    ClientHeight = 242
     ClientWidth = 301
     TabOrder = 1
     object coordenadas: TRadioButton
       Left = 6
-      Height = 34
+      Height = 35
       Top = 0
       Width = 289
       Caption = 'Coordenadas Cíclicas'
@@ -161,48 +161,48 @@ object Form1: TForm1
     end
     object hooke: TRadioButton
       Left = 6
-      Height = 34
-      Top = 34
+      Height = 35
+      Top = 35
       Width = 289
       Caption = 'Hooke and Jeeves'
       TabOrder = 1
     end
     object gradiente: TRadioButton
       Left = 6
-      Height = 34
-      Top = 68
+      Height = 35
+      Top = 70
       Width = 289
       Caption = 'Gradiente'
       TabOrder = 2
     end
     object newton: TRadioButton
       Left = 6
-      Height = 34
-      Top = 102
+      Height = 35
+      Top = 105
       Width = 289
       Caption = 'Newton'
       TabOrder = 3
     end
     object gradconj: TRadioButton
       Left = 6
-      Height = 34
-      Top = 136
+      Height = 35
+      Top = 140
       Width = 289
       Caption = 'Gradiente Conjugado Generalizado'
       TabOrder = 4
     end
     object fletcher: TRadioButton
       Left = 6
-      Height = 34
-      Top = 170
+      Height = 35
+      Top = 175
       Width = 289
       Caption = 'Fletcher and Reeves'
       TabOrder = 5
     end
     object davidon: TRadioButton
       Left = 6
-      Height = 33
-      Top = 204
+      Height = 32
+      Top = 210
       Width = 289
       Caption = 'Davidon-Fletcher-Powell'
       TabOrder = 6
@@ -214,7 +214,7 @@ object Form1: TForm1
     Top = 288
     Width = 689
     Caption = 'Solução'
-    ClientHeight = 287
+    ClientHeight = 292
     ClientWidth = 685
     TabOrder = 2
     object StringGrid2: TStringGrid
